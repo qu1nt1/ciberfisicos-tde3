@@ -4,11 +4,10 @@ import java.util.concurrent.Executors;
 public class JantarDosFilosofosSemDeadlock {
 
     static final int N = 5;
-    // O array agora é da classe "FilosofoCorrigido"
+
     static final FilosofoCorrigido[] filosofos = new FilosofoCorrigido[N];
     static final Object[] garfos = new Object[N];
 
-    // Esta é a classe da SOLUÇÃO
     static class FilosofoCorrigido implements Runnable {
         private final int id;
         private final Object primeiroGarfo; // O de menor ID
@@ -18,7 +17,6 @@ public class JantarDosFilosofosSemDeadlock {
         public FilosofoCorrigido(int id, Object garfo1, Object garfo2) {
             this.id = id;
 
-            // --- A LÓGICA DA HIERARQUIA (A SOLUÇÃO) ---
             // Compara o "ID" (hashcode) dos dois garfos
             if (System.identityHashCode(garfo1) < System.identityHashCode(garfo2)) {
                 this.primeiroGarfo = garfo1;
@@ -52,7 +50,6 @@ public class JantarDosFilosofosSemDeadlock {
 
                     estado = "COM FOME";
 
-                    // --- A LÓGICA CORRIGIDA ---
                     // 1. Pega o "primeiroGarfo" (menor ID)
                     synchronized (primeiroGarfo) {
 
@@ -71,7 +68,7 @@ public class JantarDosFilosofosSemDeadlock {
         }
     }
 
-    // Método do "Observador" para imprimir os estados (idêntico)
+    // Método do "Observador" para imprimir os estados
     static void imprimirEstados() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < N; i++) {
@@ -84,21 +81,20 @@ public class JantarDosFilosofosSemDeadlock {
     public static void main(String[] args) throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(N);
 
-        // Inicializa garfos (idêntico)
+        // Inicializa garfos
         for (int i = 0; i < N; i++) {
             garfos[i] = new Object();
         }
 
-        // Inicializa filósofos (chama a classe "FilosofoCorrigido")
+        // Inicializa filósofos
         for (int i = 0; i < N; i++) {
             Object garfoEsquerda = garfos[i];
             Object garfoDireita = garfos[(i + 1) % N];
-            // --- ÚNICA MUDANÇA NO MAIN ---
             filosofos[i] = new FilosofoCorrigido(i, garfoEsquerda, garfoDireita);
             executor.execute(filosofos[i]);
         }
 
-        // Ciclos de monitoramento do estado (idêntico)
+        // Ciclos de monitoramento do estado
         for (int ciclo = 1; ciclo <= 30; ciclo++) {
             System.out.printf("Ciclo %02d -> ", ciclo);
             imprimirEstados();
