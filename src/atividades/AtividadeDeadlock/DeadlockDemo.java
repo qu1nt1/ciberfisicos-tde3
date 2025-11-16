@@ -1,6 +1,7 @@
-import java.util.concurrent.*;
+package AtividadeDeadlock;
 
-public class DeadlockCorrigido {
+
+public class DeadlockDemo {
 
     static final Object LOCK_A = new Object();
     static final Object LOCK_B = new Object();
@@ -21,24 +22,21 @@ public class DeadlockCorrigido {
         });
 
         Thread t2 = new Thread(() -> {
-
-            synchronized (LOCK_A) {
-                System.out.println("T2: Segurando LOCK_A...");
+            synchronized (LOCK_B) {
+                System.out.println("T2: Segurando LOCK_B...");
                 dormir(100);
-                System.out.println("T2: Esperando por LOCK_B...");
-
-                synchronized (LOCK_B) {
-                    System.out.println("T2: Segurando LOCK_A e LOCK_B.");
+                System.out.println("T2: Esperando por LOCK_A...");
+                synchronized (LOCK_A) {
+                    System.out.println("T2: Segurando LOCK_B e LOCK_A.");
                 }
             }
-
             System.out.println("T2 concluiu");
         });
 
         t1.start();
         t2.start();
 
-        System.out.println("Iniciado... (Nao vai travar)");
+        System.out.println("Iniciado... (vai travar)");
     }
 
     static void dormir(long ms) {

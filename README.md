@@ -49,7 +49,7 @@ Desta fora, cada garfo recebe um índice 0..N-1.
 →  Então deve-se calcular primeiro = min(left, right) e segundo = max(left, right).
 →  Dessa forma, cada filosófo vai sempre pedir o primeiro antes de pedir segundo (sempre pegando antes o garfo com índice menor - o da esquerda). Liberando assim, sempre em ordem inversa (ou em qualquer ordem após o uso).
 
-### [| | Ver Pseudo-Código do problema do Jantar do Filósofos - Resolvido](JantarDosFilosofos/PseudoCódigo.text)
+### [| | Ver Pseudo-Código do problema do Jantar do Filósofos - Resolvido](src/src/JantarDosFilosofos/PseudoCódigo.text)
 
 ----
 ### Conclusão do problema:

@@ -1,45 +1,39 @@
+package JantarDosFilosofos;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class JantarDosFilosofosSemDeadlock {
+public class JantarDosFilosofos {
 
     static final int N = 5;
-
-    static final FilosofoCorrigido[] filosofos = new FilosofoCorrigido[N];
+    static final Filosofo[] filosofos = new Filosofo[N];
     static final Object[] garfos = new Object[N];
 
-    static class FilosofoCorrigido implements Runnable {
+    static class Filosofo implements Runnable {
         private final int id;
-        private final Object primeiroGarfo; // O de menor ID
-        private final Object segundoGarfo;  // O de maior ID
+        private final Object garfoEsquerda;
+        private final Object garfoDireita;
         private String estado = "PENSANDO";
 
-        public FilosofoCorrigido(int id, Object garfo1, Object garfo2) {
+        public Filosofo(int id, Object garfoEsquerda, Object garfoDireita) {
             this.id = id;
-
-            // Compara o "ID" (hashcode) dos dois garfos
-            if (System.identityHashCode(garfo1) < System.identityHashCode(garfo2)) {
-                this.primeiroGarfo = garfo1;
-                this.segundoGarfo = garfo2;
-            } else {
-                this.primeiroGarfo = garfo2; // Inverte a ordem
-                this.segundoGarfo = garfo1;
-            }
+            this.garfoEsquerda = garfoEsquerda;
+            this.garfoDireita = garfoDireita;
         }
 
-        // Método para o "observador" (main) ler o estado
+
         public String getEstado() {
             return estado;
         }
 
         private void pensar() throws InterruptedException {
             estado = "PENSANDO";
-            Thread.sleep(500); // Tempo fixo pensando
+            Thread.sleep(500);
         }
 
         private void comer() throws InterruptedException {
             estado = "COMENDO";
-            Thread.sleep(500); // Tempo fixo comendo
+            Thread.sleep(500);
         }
 
         @Override
@@ -49,15 +43,11 @@ public class JantarDosFilosofosSemDeadlock {
                     pensar();
 
                     estado = "COM FOME";
+                    synchronized (garfoEsquerda) {
 
-                    // 1. Pega o "primeiroGarfo" (menor ID)
-                    synchronized (primeiroGarfo) {
-
-                        // A "armadilha" ainda existe, mas não causa deadlock
                         Thread.sleep(200);
 
-                        // 2. Pega o "segundoGarfo" (maior ID)
-                        synchronized (segundoGarfo) {
+                        synchronized (garfoDireita) {
                             comer();
                         }
                     }
@@ -68,7 +58,6 @@ public class JantarDosFilosofosSemDeadlock {
         }
     }
 
-    // Método do "Observador" para imprimir os estados
     static void imprimirEstados() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < N; i++) {
@@ -81,27 +70,26 @@ public class JantarDosFilosofosSemDeadlock {
     public static void main(String[] args) throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(N);
 
-        // Inicializa garfos
+        // iniciando garfo por garfo
         for (int i = 0; i < N; i++) {
             garfos[i] = new Object();
         }
 
-        // Inicializa filósofos
+        // iniciando filosofo por filosofo
         for (int i = 0; i < N; i++) {
             Object garfoEsquerda = garfos[i];
             Object garfoDireita = garfos[(i + 1) % N];
-            filosofos[i] = new FilosofoCorrigido(i, garfoEsquerda, garfoDireita);
+            filosofos[i] = new Filosofo(i, garfoEsquerda, garfoDireita);
             executor.execute(filosofos[i]);
         }
 
-        // Ciclos de monitoramento do estado
-        for (int ciclo = 1; ciclo <= 30; ciclo++) {
+        for (int ciclo = 1; ciclo <= 10; ciclo++) {
             System.out.printf("Ciclo %02d -> ", ciclo);
             imprimirEstados();
-            Thread.sleep(500); // O "ciclo" do observador
+            Thread.sleep(500);
         }
 
-        executor.shutdownNow(); // Força o fim da simulação
-        System.out.println("\n--- Fim da simulação (Solução Provada) ---");
+        executor.shutdownNow();
+        System.out.println("\n--- Fim da simulação Deadlock Provado ---");
     }
 }
