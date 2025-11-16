@@ -1,0 +1,88 @@
+-------- COM DEADLOCK (impasse) ---------
+
+CONSTANTE N = 5  // Número de filósofos
+
+VARIÁVEIS GLOBAIS:
+    garfos: array[0..N-1] // Inicializados com 1
+    estados: array[0..N-1] de String   // "PENSANDO", "COM FOME", "COMENDO"
+
+PROCEDIMENTO filósofo_ingênuo(id: Inteiro)
+    garfo_esquerdo = garfos[id]
+    garfo_direito = garfos[(id + 1) % N]
+
+    ENQUANTO verdadeiro FAÇA:
+        // Fase de pensar
+        estados[id] = "PENSANDO"
+        esperar(tempo_aleatório)
+
+        // Fase de comer
+        estados[id] = "COM FOME"
+
+        // Protocolo problemático: pega garfo esquerdo depois direito
+        adquirir(garfo_esquerdo)
+        esperar(pequeno_atraso)  // Aumenta chance de deadlock
+        adquirir(garfo_direito)
+
+        estados[id] = "COMENDO"
+        esperar(tempo_aleatório)
+
+        liberar(garfo_direito)
+        liberar(garfo_esquerdo)
+    FIM ENQUANTO
+FIM PROCEDIMENTO
+
+
+---------- CORRIGIDO (estado de sucesso) ----------
+
+CONSTANTE N = 5  // Número de filósofos
+
+VARIÁVEIS GLOBAIS:
+    garfos: array[0..N-1]  // Inicializados com 1
+    estados: array[0..N-1] // "COM FOME", "PENSANDO", "COMENDO"
+
+FUNÇÃO determinar_ordem_garfos(garfoA, garfoB: Semáforo): (primeiro, segundo: Semáforo)
+    // Estratégia: sempre pegar primeiro o garfo com menor identificador
+    SE identificador(garfoA) < identificador(garfoB) ENTÃO:
+        RETORNE (garfoA, garfoB)
+    SENÃO:
+        RETORNE (garfoB, garfoA)
+    FIM SE
+FIM FUNÇÃO
+
+PROCEDIMENTO filósofo_corrigido(id: Inteiro)
+    garfo_esquerdo = garfos[id]
+    garfo_direito = garfos[(id + 1) % N]
+    
+    // Aplicar hierarquia: determinar ordem fixa para aquisição
+    (primeiro_garfo, segundo_garfo) = determinar_ordem_garfos(garfo_esquerdo, garfo_direito)
+    
+    ENQUANTO verdadeiro FAÇA:
+        // Fase de pensar
+        estados[id] = "PENSANDO"
+        esperar(tempo_aleatório)
+        
+        // Fase de comer com protocolo seguro
+        estados[id] = "COM FOME"
+        
+        // Sempre adquirir na ordem estabelecida pela hierarquia
+        adquirir(primeiro_garfo)
+        esperar(pequeno_atraso)  // Mesmo atraso, mas sem deadlock
+        adquirir(segundo_garfo)
+        
+        estados[id] = "COMENDO"
+        esperar(tempo_aleatório)
+        
+        // Liberação pode ser em qualquer ordem
+        liberar(segundo_garfo)
+        liberar(primeiro_garfo)
+    FIM ENQUANTO
+FIM PROCEDIMENTO
+
+PROCEDIMENTO observador()
+    PARA ciclo = 1 ATÉ max_ciclos FAÇA:
+        PARA i = 0 ATÉ N-1 FAÇA:
+            IMPRIMIR("[", i, ": ", estados[i], "] ")
+        FIM PARA
+        esperar(intervalo_observação)
+    FIM PARA
+FIM PROCEDIMENTO

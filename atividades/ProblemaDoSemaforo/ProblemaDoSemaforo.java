@@ -1,10 +1,8 @@
-package ProblemaDoSemaforo;
 
 import java.util.concurrent.*;
 
-public class ProblemaSemaforoCorrigido {
+public class ProblemaDoSemaforo {
     static int count = 0;
-    static final Semaphore sem = new Semaphore(1, true); // ✔ FIFO (justo)
 
     public static void main(String[] args) throws Exception {
         int T = 8, M = 250_000;
@@ -12,14 +10,7 @@ public class ProblemaSemaforoCorrigido {
 
         Runnable r = () -> {
             for (int i = 0; i < M; i++) {
-                try {
-                    sem.acquire();    //  entrada exclusiva
-                    count++;          //  incrementação protegida
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    sem.release();    //  liberação garantida
-                }
+                count++; // atualização não atômica = perda de incrementos
             }
         };
 
