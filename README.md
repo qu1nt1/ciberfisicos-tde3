@@ -1,4 +1,4 @@
-# TDE3 - Atividade FInal
+# TDE3 - Atividade Final
 **Disciplina:** Performance em Sistemas Ciberfísicos
 
 **Professor:** Andrey Cabral Meira
@@ -9,7 +9,7 @@
 - João Pedro de Souza Quintiliano da Silva;
 - Lucas Azzolin Haubmann.
 
-**Link do Vídeo da Atividade:** 
+**Link do Vídeo da Atividade:** https://youtu.be/TmZbYH4YZps
 
 ----
 ## Parte 1 - Jantar dos Filósofos 🍝🤔🍴
@@ -51,10 +51,10 @@ Desta fora, cada garfo recebe um índice 0..N-1.
 →  Então deve-se calcular primeiro = min(left, right) e segundo = max(left, right).
 →  Dessa forma, cada filosófo vai sempre pedir o primeiro antes de pedir segundo (sempre pegando antes o garfo com índice menor - o da esquerda). Liberando assim, sempre em ordem inversa (ou em qualquer ordem após o uso).
 
-### [| | Ver Pseudo-Código do problema do Jantar do Filósofos - Resolvido](atividades/JantarDosFilosofos/PseudoCódigo.text)
+### [| | Ver Pseudo-Código do problema do Jantar do Filósofos](atividades/JantarDosFilosofos/PseudoCódigo.text)
 
 ----
-### Conclusão do problema:
+### Conclusão
 A espera circular é eliminada porque toda aquisição de recursos respeita a mesma ordem global. Não existe sequência de filósofos A → B → C →...→ A, onde cada um detém um recurso necessário para o próximo sem violar a ordem; portanto não é possível haver ciclo.
 Essa mudança pequena nas regras locais evita a condição crítica (espera circular) que permite deadlock, recuperando progresso coletivo sem sacrificar a exclusão mútua.
 
@@ -68,13 +68,21 @@ O experimento teve como **objetivo** comparar o comportamento de um contador com
 ---
 ### Execução 1 - Sem Semáforo
 
+OBS: Ao decorrer de vários testes, pôde-se ver que o número obtido ao decorrer das execuções variava muito, portanto demonstrou-se um modelo não confiavél como pode-se ver nas imagens a seguir:
+
 <img src="imgs/ProblemaSemaforo.png">
 
 * Esperado: 2.000.000
 * Obtido: 607.149
 * Tempo: 0,021s
 
-Sem qualquer mecanismo de sincronização, o programa sofre uma condição de corrida, pois várias threads atualizam simultaneamente o contador usando a operação count++, que não é atômica. Dessa forma, incrementos são perdidos, resultando em um valor final incorreto. Apesar disso, o tempo de execução é extremamente baixo, pois não há bloqueios nem espera entre threads, produzindo um throughput muito alto, mas com dados inconsistentes.
+<img src="imgs/ProblemaSemaforo-2.png">
+
+* Esperado: 2.000.000
+* Obtido: 1.238.222
+* Tempo: 0,017s
+
+Sem qualquer mecanismo de sincronização, várias threads atualizam simultaneamente o contador usando a operação count++, que não é atômica, podendo resultar em difentes valores obtidos. Dessa forma, incrementos são perdidos, resultando em um valor final incorreto. Apesar disso, o tempo de execução é extremamente baixo, pois não há bloqueios nem espera entre threads, produzindo um throughput muito alto, mas com dados inconsistentes.
 
 ### Execução 2 - Com Semáforo
 
@@ -83,22 +91,36 @@ Sem qualquer mecanismo de sincronização, o programa sofre uma condição de co
 * Esperado: 2.000.000
 * Obtido: 2.000.000
 * Tempo: 13,289s
+
+Ao utilizar um semáforo, somente uma thread por vez pode acessar a operação de incremento. Isso faz com que toda a região crítica seja executada de forma exclusiva, impedindo interferência entre as threads.
+
 ----
 ### Análise dos Trade-offs
 
 O experimento evidencia um trade-off clássico em programação concorrente:
 
-1. Sem sincronização
+1. ***Sem sincronização:***
 
+- **Resultados incorretos:** vários incrementos são perdidos, pois uma thread sobrescreve o valor atualizado por outra.
+- **Inconsistência:** cada execução pode produzir um resultado diferente, tornando o sistema imprevisível.
+- **Falta de segurança:** qualquer processamento que dependa da precisão desse valor pode falhar.
+- **Dificuldade de depuração:** erros de concorrência são difíceis de detectar e reproduzir.
 
-2. Com semáforo
+2. ***Com semáforo:***
+
+- **Precisão total:** nenhum incremento é perdido.
+- **Consistência:** o valor final é sempre o esperado, independente da ordem de execução das threads.
+- **Segurança:** evita corrupção de dados.
+- **Determinismo:** o comportamento passa a ser previsível e confiável.
+
+Em outras palavras, o semáforo garante integridade e confiabilidade absoluta, eliminando condições de corrida.
 
 ---
 ### Conclusão
 
-O experimento demonstra a importância de usar sincronização corretamente e de forma estratégica. Sincronizar garante consistência, mas sempre envolve um trade-off com desempenho. Um semáforo aplicado corretamente produz um valor final exato, mas com throughput reduzido. Porém, quando mal aplicado, ele elimina as vantagens do paralelismo sem resolver o problema da concorrência.
+O experimento demonstra a importância de usar sincronização corretamente e de forma estratégica. Sincronizar garante consistência, mas sempre envolve um trade-off com desempenho. Um semáforo aplicado corretamente produz um valor final exato, mas com throughput reduzido. 
 
-O estudo reforça que mecanismos de sincronização devem ser usados com cuidado, protegendo apenas o necessário e garantindo que toda a seção crítica esteja dentro da região protegida.
+A ausência de semáforo leva a perdas de operações e inconsistencia nos resultados devido à interferência entre threads. A presença do semáforo elimina completamente esses problemas, garantindo o valor correto final, mas reduz o desempenho por serializar o acesso à região crítica.
 
 ----
 ## Parte 3 - DeadLock 🅰️🅱️🔒
